@@ -30,7 +30,7 @@ class ProfileViewModel(
                 name = _name.value,
                 relationship = _relationship.value,
                 relationshipScore = relationshipScore,
-                historyMessage = _historyMessage.value
+                category = _historyMessage.value
             )
             repository.insertPerson(person)
         }
