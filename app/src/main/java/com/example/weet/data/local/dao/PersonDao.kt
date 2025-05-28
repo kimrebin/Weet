@@ -1,11 +1,16 @@
 package com.example.weet.data.local.dao
 
-import androidx.room.*
-import com.example.relationshiptracker.data.local.model.PersonEntity
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Delete
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.weet.data.local.entity.PersonEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PersonDao {
+
     @Query("SELECT * FROM persons")
     fun getAllPersons(): Flow<List<PersonEntity>>
 
@@ -15,3 +20,4 @@ interface PersonDao {
     @Delete
     suspend fun deletePerson(person: PersonEntity)
 }
+
