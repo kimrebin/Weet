@@ -7,7 +7,6 @@ import com.example.weet.repository.ChecklistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 class ChecklistViewModel(
     private val repository: ChecklistRepository
@@ -24,20 +23,9 @@ class ChecklistViewModel(
         }
     }
 
-    fun saveChecklist(result: ChecklistResultEntity, tagWeight: Float) {
+    fun saveChecklist(result: ChecklistResultEntity) {
         viewModelScope.launch {
-            repository.insertChecklistAndUpdateScore(result, tagWeight)
-
-            val rqs = calculateRQS(
-                frequency = result.frequencyScore,
-                emotion = result.emotionScore,
-                distance = result.distanceScore,
-                tagWeight = tagWeight
-            )
-
-            // 점수를 정수로 변환 (예: 78.5 → 79)
-            repository.updatePersonScore(result.personId, rqs.roundToInt())
-
+            repository.insertChecklist(result)
             _latestResult.value = result
         }
     }
