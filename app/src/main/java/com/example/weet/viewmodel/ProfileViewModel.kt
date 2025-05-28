@@ -11,6 +11,13 @@ class ProfileViewModel(
     private val repository: PersonRepository
 ) : ViewModel() {
 
+    private val _relationshipScore = MutableStateFlow(100) // 기본값 또는 초기 점수
+    val relationshipScore = _relationshipScore.asStateFlow()
+
+    fun updateRelationshipScore(value: Int) {
+        _relationshipScore.value = value
+    }
+
     private val _name = MutableStateFlow("")
     val name = _name.asStateFlow()
 
@@ -19,6 +26,13 @@ class ProfileViewModel(
 
     private val _historyMessage = MutableStateFlow("")
     val historyMessage = _historyMessage.asStateFlow()
+
+    private val _tagWeight = MutableStateFlow(1.0f)
+    val tagWeight = _tagWeight.asStateFlow()
+
+    fun updateTagWeight(value: Float) {
+        _tagWeight.value = value
+    }
 
     fun updateName(value: String) { _name.value = value }
     fun updateRelationship(value: String) { _relationship.value = value }
