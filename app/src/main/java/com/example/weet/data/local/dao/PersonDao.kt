@@ -1,5 +1,6 @@
 package com.example.weet.data.local.dao
 
+import androidx.room.*
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Delete
@@ -13,6 +14,9 @@ interface PersonDao {
 
     @Query("SELECT * FROM persons")
     fun getAllPersons(): Flow<List<PersonEntity>>
+
+    @Query("SELECT * FROM persons WHERE id = :id")
+    fun getPersonById(id: Int): Flow<PersonEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPerson(person: PersonEntity)
