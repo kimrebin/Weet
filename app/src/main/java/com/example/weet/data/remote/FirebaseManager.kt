@@ -1,5 +1,6 @@
 package com.example.weet.data.remote
 import android.net.Uri
+import androidx.compose.animation.core.snap
 import com.example.weet.domain.model.Person
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -53,6 +54,26 @@ object FirebaseManager {
         ref.putFile(fileUri).await()
         return ref.downloadUrl.await().toString()
     }
+
+    suspend fun saveSettings(userId: String, notificationInterval: Int, popupTime: String) {
+        val settings = mapOf(
+            "notificationInterval" to notificationInterval,
+            "popupTime" to popupTime
+        )
+        firestore.collection("settings")
+            .document(userId)
+            .set(settings)
+            .await()
+    }
+
+    suspend fun getSettings(userId: String): Map<String, Any>? {
+        val snapshot = firestore.collection("settings")
+            .document(userId)
+            .get()
+            .await()
+        return if (snapshot.exists()) snapshot.data else null
+    }
+
 
 }
 //data에 담아야 할 객체 : tag, name, score, image

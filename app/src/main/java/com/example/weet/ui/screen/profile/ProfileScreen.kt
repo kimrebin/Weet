@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun ProfileScreen(personId: Int) {
+fun ProfileScreen(personId: Int, onBack: () -> Unit) {
     Column {
         Text("Profile for person ID: $personId")
     }
