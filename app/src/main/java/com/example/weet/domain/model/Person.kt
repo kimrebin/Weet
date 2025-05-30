@@ -5,7 +5,5 @@ data class Person(
     val name: String,
     val photoUrl: String?,
     val tag: String,
-    val score: Int,
-    val tagWeight: Float
+    val score: Int
 )
-
