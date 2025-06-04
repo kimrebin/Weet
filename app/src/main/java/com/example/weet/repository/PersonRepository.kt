@@ -5,6 +5,8 @@ import com.example.weet.data.local.entity.PersonEntity
 import kotlinx.coroutines.flow.Flow
 
 class PersonRepository(private val dao: PersonDao) {
-    suspend fun insertPerson(person: PersonEntity) = dao.insert(person)
-    fun getPersonById(id: Int): Flow<PersonEntity?> = dao.getPersonById(id)
+    suspend fun insertPerson(person: PersonEntity) = dao.insertPerson(person)
+    fun getPersonById(id: Int): Flow<PersonEntity?> {
+        return dao.getPersonById(id)
+    }
 }
