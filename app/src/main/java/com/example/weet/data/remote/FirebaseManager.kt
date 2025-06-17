@@ -1,7 +1,6 @@
 package com.example.weet.data.remote
 import android.net.Uri
 import androidx.compose.animation.core.snap
-import com.example.weet.domain.model.Person
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore

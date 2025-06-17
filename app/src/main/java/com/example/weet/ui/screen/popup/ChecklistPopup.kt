@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.example.weet.data.local.entity.ChecklistResultEntity
-import com.example.weet.domain.model.Person
 import com.example.weet.viewmodel.ChecklistViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
