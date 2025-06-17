@@ -14,7 +14,7 @@ data class Person(
     val score: Int,
     val relationshipScore: Int,
     val relationship: String,
-    val category: String
+    val category: String,
 )
 
 // Entity ↔ Domain 변환 함수
