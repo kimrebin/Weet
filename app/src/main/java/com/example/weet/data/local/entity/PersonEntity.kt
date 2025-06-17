@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class PersonEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val relationship: String,
-    val relationshipScore: Int,
-    val category: String
+    val photoUrl: String?,
+    val tag: String,
+    val score: Int
 )
