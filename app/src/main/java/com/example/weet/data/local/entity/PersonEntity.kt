@@ -5,10 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "persons")
 data class PersonEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val relationshipScore: Int,
-    val category: String
+    val photoUrl: String?,
+    val tag: String,
+    val score: Int
 )
