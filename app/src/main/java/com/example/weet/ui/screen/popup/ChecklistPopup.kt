@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.example.weet.data.local.entity.ChecklistResultEntity
 import com.example.weet.viewmodel.ChecklistViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.weet.repository.Person
 
 
 @Composable
@@ -114,7 +115,8 @@ fun ChecklistPopup(
                             distanceScore = distance!!,
                             tagWeight = personTagWeight,
                             rqsScore = rqs
-                        )
+                        ),
+                        personTagWeight
                     )
                     onDismiss()
                 }

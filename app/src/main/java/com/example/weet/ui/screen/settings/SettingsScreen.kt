@@ -25,7 +25,7 @@ fun SettingsScreen(navController: NavController, onBack: () -> Unit) {
 
         Text("Popup Time: $popupTime")
         Button(onClick = {
-            navController.navigate("schedule_popup")
+            navController.navigate("schedule")
         }) {
             Text("Set Popup Time")
         }

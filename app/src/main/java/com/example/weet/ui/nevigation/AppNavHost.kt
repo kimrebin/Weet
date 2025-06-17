@@ -27,14 +27,14 @@ fun AppNavHost(navController: NavHostController) {
                     navController.navigate("profile/$personId")
                 },
                 onAddPerson = {
-                    navController.navigate("add")
+                    navController.navigate("profile")
                 },
                 onOpenChecklist = {
                     navController.navigate("checklist")
-                },
-                onOpenSettings = {
-                    navController.navigate("settings")
                 }
+                /*onOpenSettings = {
+                    navController.navigate("settings")
+                }*/
             )
         }
 
@@ -58,11 +58,13 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
 
-        composable("settings") {
+/*        composable("settings") {
             SettingsScreen(
                 navController = navController,
                 onBack = {navController.popBackStack()}
-            )
+            )*/
         }
-    }
+
+
+
 }

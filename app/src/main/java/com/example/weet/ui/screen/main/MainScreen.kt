@@ -35,7 +35,7 @@ import com.example.weet.viewmodel.MainViewModel
 
 @OptIn(ExperimentalPerfettoTraceProcessorApi::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel(), onPersonClick: (personId: String) -> Unit, onAddPerson:() -> Unit, onOpenChecklist:() -> Unit, onOpenSettings:() -> Unit) {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel(), onPersonClick: (personId: String) -> Unit, onAddPerson:() -> Unit, onOpenChecklist:() -> Unit) {
     val personsByTag by viewModel.personByTag.collectAsState()
     val tags = personsByTag.keys.toList()
     var selectedTag by remember { mutableStateOf(tags.firstOrNull()) }

@@ -12,18 +12,18 @@ import kotlinx.coroutines.flow.Flow
 interface PersonDao {
 
     @Query("SELECT * FROM persons")
-    fun getAllPersons(): Flow<List<PersonEntity>>
+    fun getAllPersons(): Flow<List<com.example.weet.data.local.entity.PersonEntity>>
 
     @Query("SELECT * FROM persons WHERE id = :id")
-    fun getPersonById(id: Int): Flow<PersonEntity?>
+    fun getPersonById(id: Int): Flow<com.example.weet.data.local.entity.PersonEntity?>
 
     @Query("SELECT * FROM persons WHERE id = :id")
-    suspend fun getPersonByIdOnce(id: Int): PersonEntity?
+    suspend fun getPersonByIdOnce(id: Int): com.example.weet.data.local.entity.PersonEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPerson(person: com.example.weet.repository.PersonEntity)
+    suspend fun insertPerson(person: com.example.weet.data.local.entity.PersonEntity)
 
     @Delete
-    suspend fun deletePerson(person: PersonEntity)
+    suspend fun deletePerson(person: com.example.weet.data.local.entity.PersonEntity)
 }
 
