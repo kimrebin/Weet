@@ -3,7 +3,6 @@ package com.example.weet.repository
 import com.example.weet.data.local.dao.ChecklistDao
 import com.example.weet.data.local.dao.PersonDao
 import com.example.weet.data.local.entity.ChecklistResultEntity
-import com.example.weet.data.local.entity.PersonEntity
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.roundToInt
 

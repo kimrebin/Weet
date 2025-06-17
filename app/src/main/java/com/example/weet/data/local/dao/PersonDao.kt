@@ -1,6 +1,5 @@
 package com.example.weet.data.local.dao
 
-import androidx.room.*
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Delete
@@ -22,7 +21,7 @@ interface PersonDao {
     suspend fun getPersonByIdOnce(id: Int): PersonEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPerson(person: PersonEntity)
+    suspend fun insertPerson(person: com.example.weet.repository.PersonEntity)
 
     @Delete
     suspend fun deletePerson(person: PersonEntity)
