@@ -44,7 +44,11 @@ class ProfileViewModel(
                 name = _name.value,
                 relationship = _relationship.value,
                 relationshipScore = relationshipScore,
-                category = _historyMessage.value
+                category = _historyMessage.value,
+                id = 0,
+                photoUrl = "",
+                tag = "",
+                score = 0
             )
             repository.insertPerson(person)
         }
