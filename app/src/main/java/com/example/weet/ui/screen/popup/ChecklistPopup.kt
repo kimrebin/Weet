@@ -12,9 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.example.weet.data.local.entity.ChecklistResultEntity
-import com.example.weet.domain.model.Person
+
 import com.example.weet.viewmodel.ChecklistViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.weet.repository.Person
 
 
 @Composable
@@ -65,9 +66,15 @@ fun SchedulePopup(
         )
     } else {
         selectedPerson?.let { person ->
+            val tagWeight = when (person.tag.lowercase()) {
+                "family" -> 1.2
+                "friend" -> 1.0
+                "business" -> 0.8
+                else -> 1.0
+            }
             ChecklistPopup(
                 personId = person.id,
-                personTagWeight = person.tagWeight,
+                personTagWeight = tagWeight,
                 onDismiss = onDismiss
             )
         }
@@ -78,7 +85,7 @@ fun SchedulePopup(
 @Composable
 fun ChecklistPopup(
     personId: Int,
-    personTagWeight: Float,
+    personTagWeight: Double,
     viewModel: ChecklistViewModel? = null,
     onDismiss: () -> Unit
 ) {

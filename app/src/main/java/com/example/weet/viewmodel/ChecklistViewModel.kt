@@ -24,7 +24,7 @@ class ChecklistViewModel(
         }
     }
 
-    fun saveChecklist(result: ChecklistResultEntity, tagWeight: Float) {
+    fun saveChecklist(result: ChecklistResultEntity, tagWeight: Double) {
         viewModelScope.launch {
             repository.insertChecklistAndUpdateScore(result, tagWeight)
 
@@ -47,8 +47,8 @@ class ChecklistViewModel(
             frequency: Float,
             emotion: Float,
             distance: Float,
-            tagWeight: Float
-        ): Float {
+            tagWeight: Double
+        ): Double {
             val w1 = 0.4f
             val w2 = 0.3f
             val w3 = 0.2f

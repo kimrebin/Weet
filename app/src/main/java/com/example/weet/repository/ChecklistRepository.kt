@@ -11,7 +11,7 @@ class ChecklistRepository(
     private val personDao: PersonDao
 ) {
 
-    suspend fun insertChecklistAndUpdateScore(result: ChecklistResultEntity, tagWeight: Float) {
+    suspend fun insertChecklistAndUpdateScore(result: ChecklistResultEntity, tagWeight: Double) {
         checklistDao.insertChecklist(result)
 
         // 점수 계산
@@ -46,7 +46,7 @@ class ChecklistRepository(
         return checklistDao.getChecklistHistory(personId)
     }
 
-    private fun calculateRQS(frequency: Float, emotion: Float, distance: Float, tagWeight: Float): Float {
+    private fun calculateRQS(frequency: Float, emotion: Float, distance: Float, tagWeight: Double): Double {
         val w1 = 0.4f
         val w2 = 0.3f
         val w3 = 0.2f
