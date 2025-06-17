@@ -2,25 +2,28 @@ package com.example.weet.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.relationshiptracker.domain.model.Person
-import com.example.relationshiptracker.repository.PersonRepository
+import com.example.weet.domain.model.Person
+import com.example.weet.repository.PersonRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.descriptors.StructureKind
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
     private val repository: PersonRepository
 ) : ViewModel() {
 
-    private val _persons = MutableStateFlow<List<Person>>(emptyList())
-    val persons: StateFlow<List<Person>> = _persons
-
-    fun loadPersons() {
-        viewModelScope.launch {
-            repository.getAllPersons().collect {
-                _persons.value = it
-            }
+    val personByTag = repository.getAllPersons()
+        .map { list: List<com.example.weet.repository.Person> ->
+            list.groupBy { it.tag }
         }
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 }
+
+
+

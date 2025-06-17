@@ -11,6 +11,7 @@ import com.example.weet.ui.screen.auth.AuthScreen
 import com.example.weet.ui.screen.checklist.ChecklistScreen
 import com.example.weet.ui.screen.main.MainScreen
 import com.example.weet.ui.screen.profile.ProfileScreen
+import com.example.weet.ui.screen.settings.SettingsScreen
 
 
 @Composable
@@ -47,7 +48,7 @@ fun AppNavHost(navController: NavHostController, isAuthenticated: Boolean) {
         }
 
         composable("profile/{personId}") {backStackEntry ->
-            val personId = backStackEntry.arguments?.getString("personId") ?: return@composable
+            val personId = backStackEntry.arguments?.getInt("personId") ?: return@composable
             ProfileScreen(
                 personId = personId,
                 onBack = {navController.popBackStack()}
@@ -68,6 +69,7 @@ fun AppNavHost(navController: NavHostController, isAuthenticated: Boolean) {
 
         composable("settings") {
             SettingsScreen(
+                navController = navController,
                 onBack = {navController.popBackStack()}
             )
         }
