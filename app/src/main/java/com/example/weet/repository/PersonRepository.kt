@@ -11,21 +11,24 @@ data class Person(
     val name: String,
     val photoUrl: String?,
     val tag: String,
-    val score: Int
+    val score: Int,
+    val relationshipScore: Int,
+    val relationship: String,
+    val category: String
 )
 
 // Entity ↔ Domain 변환 함수
 fun PersonEntity.toDomain(): Person =
-    Person(id, name, photoUrl, tag, score)
+    Person(id, name, photoUrl, tag, score, relationshipScore, relationship, category)
 
 fun Person.toEntity(): PersonEntity =
-    PersonEntity(id, name, photoUrl, tag, score)
+    PersonEntity(id, name, photoUrl, tag, score, relationshipScore, relationship, category)
 
 // Repository 클래스
 class PersonRepository(private val dao: PersonDao) {
 
-    suspend fun insertPerson(person: Person) {
-        dao.insertPerson(person.toEntity())
+    suspend fun insertPerson(person: PersonEntity) {
+        dao.insertPerson(person)
     }
 
     fun getPersonById(id: Int): Flow<Person?> {
