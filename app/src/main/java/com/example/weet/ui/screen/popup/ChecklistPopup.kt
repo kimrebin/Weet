@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.example.weet.data.local.entity.ChecklistResultEntity
+import com.example.weet.domain.model.Person
 import com.example.weet.viewmodel.ChecklistViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.weet.repository.Person
 
 
 @Composable
@@ -94,11 +94,21 @@ fun ChecklistPopup(
         title = { Text("체크리스트 작성") },
         text = {
             Column {
-                Text("📞 얼마나 자주 연락하나요?", fontWeight = FontWeight.Bold)
+                Text("얼마나 자주 연락하나요?", fontWeight = FontWeight.Bold)
                 RadioOption("자주 (1주 이내)", 1.0f, frequency) { frequency = it }
                 RadioOption("가끔 (1주~1달)", 0.5f, frequency) { frequency = it }
                 RadioOption("거의 없음 (1달 이상)", 0.0f, frequency) { frequency = it }
-                // 아래도 같은 방식
+
+                Text("이 사람과의 감정은 요즘 어떤가요?", fontWeight = FontWeight.Bold)
+                RadioOption("주로 긍정적이에요", 1.0f, emotion) { emotion = it }
+                RadioOption("보통이에요", 0.5f, emotion) { emotion = it }
+                RadioOption("자주 불편하거나 부정적이에요", 0.0f, emotion) { emotion = it }
+
+                Text("이 사람은 당신에게 얼마나 가까운 존재인가요?", fontWeight = FontWeight.Bold)
+                RadioOption("매우 가까운 사람 (마음 터놓는 사이)", 1.0f, distance) { distance = it }
+                RadioOption("보통 (가끔 의지하거나 대화함)", 0.5f, distance) { distance = it }
+                RadioOption("심리적으로 거리가 있는 편", 0.0f, distance) { distance = it }
+
             }
         },
         confirmButton = {
@@ -116,7 +126,7 @@ fun ChecklistPopup(
                             tagWeight = personTagWeight,
                             rqsScore = rqs
                         ),
-                        personTagWeight
+                        tagWeight = personTagWeight
                     )
                     onDismiss()
                 }
