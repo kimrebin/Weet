@@ -35,15 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.weet.viewmodel.MainViewModel
+import com.example.weet.repository.*
+import java.util.stream.Collectors.toList
+import kotlin.collections.firstOrNull
 
 @OptIn(ExperimentalPerfettoTraceProcessorApi::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel = hiltViewModel(), onPersonClick: (personId: Int) -> Unit, onOpenChecklist:() -> Unit) {
-    val personsByTag by viewModel.personByTag.collectAsState()
-    val tags = personsByTag.keys.toList()
-    var selectedTag by remember { mutableStateOf(tags.firstOrNull()) }
-    val tagOptions = listOf("family", "friend", "business")
-    val setSelectedTag = remember {mutableStateOf<String?>(null)}
+    val personsByTag by viewModel.personByTag.collectAsState(initial = emptyMap<String, List<Person>>())
+    val tags = personsByTag.keys.ifEmpty { setOf("family", "friend", "business") }.toList()
+    var selectedTag by remember { mutableStateOf(tags.first()) }
 
     Column(modifier = Modifier.fillMaxSize()){
         TagSelector(
@@ -111,7 +112,7 @@ fun TagSelector(
 
 @Composable
 fun MindMapSection(
-    persons: List<com.example.weet.repository.Person>,
+    persons: List<Person>,
     onPersonClick: (Int) -> Unit
 ) {
     LazyColumn(
