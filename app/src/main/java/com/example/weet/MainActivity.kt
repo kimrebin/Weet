@@ -17,7 +17,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.weet.ui.nevigation.AppNavHost
 import com.example.weet.ui.theme.*
 import com.example.weet.ui.theme.WeetTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

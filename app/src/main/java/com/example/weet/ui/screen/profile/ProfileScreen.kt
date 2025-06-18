@@ -14,7 +14,7 @@ import com.example.weet.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
-    personId: Int,
+    personId: Int?,
     onBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {

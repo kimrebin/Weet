@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.Delete
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.weet.data.local.entity.PersonEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,7 +14,7 @@ interface PersonDao {
     fun getAllPersons(): Flow<List<com.example.weet.data.local.entity.PersonEntity>>
 
     @Query("SELECT * FROM persons WHERE id = :id")
-    fun getPersonById(id: Int): Flow<com.example.weet.data.local.entity.PersonEntity?>
+    fun getPersonById(id: Int?): Flow<com.example.weet.data.local.entity.PersonEntity?>
 
     @Query("SELECT * FROM persons WHERE id = :id")
     suspend fun getPersonByIdOnce(id: Int): com.example.weet.data.local.entity.PersonEntity?

@@ -1,16 +1,13 @@
 package com.example.weet.ui.nevigation
 
-import androidx.collection.intListOf
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.weet.data.local.SettingsKeys
 import com.example.weet.ui.screen.add.AddPersonScreen
 import com.example.weet.ui.screen.checklist.ChecklistScreen
 import com.example.weet.ui.screen.main.MainScreen
 import com.example.weet.ui.screen.profile.ProfileScreen
-import com.example.weet.ui.screen.settings.SettingsScreen
 
 
 @Composable
@@ -26,9 +23,6 @@ fun AppNavHost(navController: NavHostController) {
                 onPersonClick = { personId ->
                     navController.navigate("profile/$personId")
                 },
-                onAddPerson = {
-                    navController.navigate("profile")
-                },
                 onOpenChecklist = {
                     navController.navigate("checklist")
                 }
@@ -39,7 +33,10 @@ fun AppNavHost(navController: NavHostController) {
         }
 
         composable("profile/{personId}") {backStackEntry ->
-            val personId = backStackEntry.arguments?.getInt("personId") ?: return@composable
+            val personId = backStackEntry.arguments?.getString("personId")?.toIntOrNull()
+            if (personId == null){
+                return@composable
+            }
             ProfileScreen(
                 personId = personId,
                 onBack = {navController.popBackStack()}

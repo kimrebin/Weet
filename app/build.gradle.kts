@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt") // ← alias 말고 직접 id 사용
+    id("org.jetbrains.kotlin.kapt")
+    id("dagger.hilt.android.plugin")// ← alias 말고 직접 id 사용
 }
 
 android {

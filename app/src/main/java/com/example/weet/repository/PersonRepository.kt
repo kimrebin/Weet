@@ -31,7 +31,7 @@ class PersonRepository(private val dao: PersonDao) {
         dao.insertPerson(person)
     }
 
-    fun getPersonById(id: Int): Flow<Person?> {
+    fun getPersonById(id: Int?): Flow<Person?> {
         return dao.getPersonById(id).map { it?.toDomain() }
     }
 
