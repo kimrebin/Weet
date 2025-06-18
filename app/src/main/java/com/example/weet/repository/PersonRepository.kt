@@ -4,6 +4,7 @@ import com.example.weet.data.local.dao.PersonDao
 import com.example.weet.data.local.entity.PersonEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 // 도메인/화면에서 사용하는 모델
 data class Person(
@@ -25,7 +26,7 @@ fun Person.toEntity(): PersonEntity =
     PersonEntity(id, name, photoUrl, tag, score, relationshipScore, relationship, category)
 
 // Repository 클래스
-class PersonRepository(private val dao: PersonDao) {
+class PersonRepository @Inject constructor(private val dao: PersonDao) {
 
     suspend fun insertPerson(person: PersonEntity) {
         dao.insertPerson(person)
