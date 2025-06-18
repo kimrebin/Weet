@@ -53,7 +53,7 @@ class ProfileViewModel(
             repository.insertPerson(person)
         }
     }
-    fun loadPerson(personId: Int) {
+    fun loadPerson(personId: Int?) {
         viewModelScope.launch {
             repository.getPersonById(personId).collect { person ->
                 person?.let {

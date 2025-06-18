@@ -1,4 +1,5 @@
 package com.example.weet.viewmodel
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.descriptors.StructureKind
 import javax.inject.Inject
 
+@HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: PersonRepository
 ) : ViewModel() {

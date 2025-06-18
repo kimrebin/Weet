@@ -1,6 +1,7 @@
 package com.example.weet.ui.screen.main
 
 import androidx.benchmark.perfetto.ExperimentalPerfettoTraceProcessorApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -28,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -35,19 +38,48 @@ import com.example.weet.viewmodel.MainViewModel
 
 @OptIn(ExperimentalPerfettoTraceProcessorApi::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel(), onPersonClick: (personId: String) -> Unit, onAddPerson:() -> Unit, onOpenChecklist:() -> Unit) {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel(), onPersonClick: (personId: Int) -> Unit, onOpenChecklist:() -> Unit) {
     val personsByTag by viewModel.personByTag.collectAsState()
     val tags = personsByTag.keys.toList()
     var selectedTag by remember { mutableStateOf(tags.firstOrNull()) }
+    val tagOptions = listOf("family", "friend", "business")
+    val setSelectedTag = remember {mutableStateOf<String?>(null)}
 
     Column(modifier = Modifier.fillMaxSize()){
         TagSelector(
             tags = tags,
             selectedTag = selectedTag,
-            onTagSelected = {selectedTag = it}
+            onTagSelected = {selectedTag =it}
         )
         personsByTag[selectedTag]?.let {persons ->
-            MindMapSection(persons = persons)
+            MindMapSection(
+                persons = persons,
+                onPersonClick = onPersonClick
+                )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+           modifier = Modifier
+               .fillMaxWidth()
+               .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = onOpenChecklist) {
+                Text("Check list")
+            }
+
+            val firstPerson = personsByTag[selectedTag]?.firstOrNull()
+            Button(
+                onClick = {
+                    firstPerson?.let { person ->
+                        onPersonClick(person.id)
+                    }
+                },
+                enabled = firstPerson != null
+            ) {
+                Text("Profile")
+            }
         }
     }
 
@@ -76,8 +108,12 @@ fun TagSelector(
 }
 
 @OptIn(ExperimentalPerfettoTraceProcessorApi::class)
+
 @Composable
-fun MindMapSection(persons: List<com.example.weet.repository.Person>) {
+fun MindMapSection(
+    persons: List<com.example.weet.repository.Person>,
+    onPersonClick: (Int) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +123,8 @@ fun MindMapSection(persons: List<com.example.weet.repository.Person>) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(4.dp),
+                    .padding(4.dp)
+                    .clickable { onPersonClick(person.id) }, // ✅ 클릭 이벤트
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Row(
