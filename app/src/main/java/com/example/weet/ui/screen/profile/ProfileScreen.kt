@@ -1,16 +1,24 @@
 package com.example.weet.ui.screen.profile
 
-import com.example.weet.ui.components.ScoreDonut
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.weet.ui.components.ScoreDonut
 import com.example.weet.viewmodel.ProfileViewModel
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.shape.CircleShape
+
+
 
 @Composable
 fun ProfileScreen(
@@ -18,8 +26,12 @@ fun ProfileScreen(
     onBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.loadPerson(personId)
+    val photoUrl by viewModel.photoUrl.collectAsState()
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.updatePhotoUrl(it.toString()) }
     }
 
     val name by viewModel.name.collectAsState()
@@ -30,57 +42,101 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "Profile Page", style = MaterialTheme.typography.headlineMedium)
+        // 뒤로가기 버튼
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // 이름 입력
+        // ✅ 이미지 선택 영역
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (photoUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Selected Image",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text("+ Add Image")
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // 이름
         OutlinedTextField(
             value = name,
             onValueChange = { viewModel.updateName(it) },
             label = { Text("Name") },
             singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.9f)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // 관계 입력 (간단히 텍스트로 구현 — 나중에 Dropdown으로 교체 가능)
+        // 태그
         OutlinedTextField(
             value = relationship,
             onValueChange = { viewModel.updateRelationship(it) },
-            label = { Text("Relationship") },
+            label = { Text("Tag (e.g. Family, School)") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.9f)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // 히스토리 메시지 입력
+        // 메모
         OutlinedTextField(
             value = historyMessage,
             onValueChange = { viewModel.updateHistoryMessage(it) },
-            label = { Text("History Message") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Memo") },
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .height(100.dp)
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 점수 donut (임시)
-        ScoreDonut(score = score)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 저장 버튼
+        ScoreDonut(score = score)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = { viewModel.savePerson(score) },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+                .height(48.dp)
         ) {
             Text("Save")
         }
     }
 }
+

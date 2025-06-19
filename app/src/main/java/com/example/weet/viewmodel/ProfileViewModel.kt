@@ -34,11 +34,18 @@ class ProfileViewModel(
         _tagWeight.value = value
     }
 
+    private val _photoUrl = MutableStateFlow("")
+    val photoUrl = _photoUrl.asStateFlow()
+
+    fun updatePhotoUrl(uri: String) {
+        _photoUrl.value = uri
+    }
+
     fun updateName(value: String) { _name.value = value }
     fun updateRelationship(value: String) { _relationship.value = value }
     fun updateHistoryMessage(value: String) { _historyMessage.value = value }
 
-    fun savePerson(relationshipScore: Int = 87) {
+    fun savePerson(relationshipScore: Int = 50) {
         viewModelScope.launch {
             val person = PersonEntity(
                 name = _name.value,
