@@ -12,5 +12,6 @@ data class PersonEntity(
     val score: Int,
     val relationshipScore: Int,
     val relationship: String,
-    val category: String,
+    val historyMessage: String?,
+    val category: String
 )

@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import com.example.weet.data.local.entity.PersonEntity
 
 @Dao
 interface PersonDao {
@@ -24,5 +25,9 @@ interface PersonDao {
 
     @Delete
     suspend fun deletePerson(person: com.example.weet.data.local.entity.PersonEntity)
+
+    @Query("SELECT * FROM persons WHERE id = :id")
+    suspend fun getPersonById(id: Int): PersonEntity?
+
 }
 

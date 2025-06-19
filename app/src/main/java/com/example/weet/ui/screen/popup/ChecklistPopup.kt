@@ -78,6 +78,7 @@ fun SchedulePopup(
                 "family" -> 1.2
                 "friend" -> 1.0
                 "business" -> 0.8
+                "other" -> 0.5
                 else -> 1.0
             }
             ChecklistPopup(

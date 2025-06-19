@@ -82,12 +82,12 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-android-compiler:2.48")
-
     implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
     implementation ("com.google.firebase:firebase-firestore-ktx:24.10.0")
     implementation ("com.google.firebase:firebase-storage-ktx:20.3.0")
-
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.compose.material3:material3:1.1.2")
+
 
 
 }

@@ -13,7 +13,7 @@ class AddPersonViewModel @Inject constructor(
     private val repository: PersonRepository
 ) : ViewModel() {
 
-    fun addPerson(name: String, tag: String) {
+    fun addPerson(name: String, tag: String, historyMessage: String) {
         val person = PersonEntity(
             id = 0,
             name = name,
@@ -22,7 +22,8 @@ class AddPersonViewModel @Inject constructor(
             score = 0,
             relationshipScore = 100,
             relationship = "",
-            category = ""
+            category = "",
+            historyMessage = historyMessage
         )
         viewModelScope.launch {
             repository.insertPerson(person)

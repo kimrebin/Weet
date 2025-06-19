@@ -58,22 +58,21 @@ class ProfileViewModel @Inject constructor(
                 id = 0,
                 photoUrl = "",
                 tag = "",
-                score = 0
+                score = 0,
+                historyMessage = _historyMessage.value
             )
             repository.insertPerson(person)
         }
     }
-    fun loadPerson(personId: Int?) {
+    fun loadPerson(personId: Int) {
         viewModelScope.launch {
-            if (personId != null) {
-                repository.getPersonById(personId).collect { person ->
-                    person?.let {
-                        _relationshipScore.value = it.relationshipScore
-                        _name.value = it.name
-                        _relationship.value = it.relationship
-                        _historyMessage.value = it.category
-                    }
-                }
+            val person = repository.getPersonById(personId)
+            person?.let {
+                _name.value = it.name
+                _relationship.value = it.tag
+                _photoUrl.value = it.photoUrl ?: ""
+                _historyMessage.value = ""
+                _relationshipScore.value = it.relationshipScore
             }
         }
     }

@@ -18,7 +18,7 @@ class PersonRepositoryImpl @Inject constructor(
         return dao.getAllPersons()
     }
 
-    override fun getPersonById(id: Int): Flow<PersonEntity?> {
+    override suspend fun getPersonById(id: Int): PersonEntity? {
         return dao.getPersonById(id)
     }
 }
