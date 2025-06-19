@@ -12,6 +12,17 @@ data class PersonEntity(
     val score: Int,
     val relationshipScore: Int,
     val relationship: String,
-    val historyMessage: String?,
-    val category: String
+    val category: String,
 )
+// relationshipMap UI를 위해
+data class Friend(
+    val name: String,
+    val score: Int
+)
+
+fun PersonEntity.toFriend(): Friend {
+    return Friend(
+        name = this.name,
+        score = this.relationshipScore
+    )
+}

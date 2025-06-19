@@ -8,6 +8,7 @@ import com.example.weet.ui.screen.add.AddPersonScreen
 import com.example.weet.ui.screen.checklist.ChecklistScreen
 import com.example.weet.ui.screen.main.MainScreen
 import com.example.weet.ui.screen.profile.ProfileScreen
+import com.example.weet.ui.screen.relationshipMap.RelationshipScreen
 
 
 @Composable
@@ -20,7 +21,8 @@ fun AppNavHost(navController: NavHostController) {
         composable("main") {
             MainScreen(
                 onPersonClick = { personId -> navController.navigate("profile/$personId") },
-                onAddPerson = { navController.navigate("addPerson") } // ✅ 이 부분!
+                onAddPerson = { navController.navigate("addPerson") }, // ✅ 이 부분! (화진)
+                onRelationshipClick = { navController.navigate("relationship") } // 추가 (규린)
             )
         }
 
@@ -52,11 +54,18 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
 
-/*        composable("settings") {
-            SettingsScreen(
-                navController = navController,
-                onBack = {navController.popBackStack()}
-            )*/
+        composable("relationship") {
+            RelationshipScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+
+        /*        composable("settings") {
+                    SettingsScreen(
+                        navController = navController,
+                        onBack = {navController.popBackStack()}
+                    )*/
         }
 
 
