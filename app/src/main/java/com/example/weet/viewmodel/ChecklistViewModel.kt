@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.roundToInt
+
 @HiltViewModel
 class ChecklistViewModel @Inject constructor(
     private val repository: ChecklistRepository

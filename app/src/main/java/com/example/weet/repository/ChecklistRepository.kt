@@ -3,10 +3,12 @@ package com.example.weet.repository
 import com.example.weet.data.local.dao.ChecklistDao
 import com.example.weet.data.local.dao.PersonDao
 import com.example.weet.data.local.entity.ChecklistResultEntity
+import com.example.weet.viewmodel.ChecklistViewModel.Companion.calculateRQS
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class ChecklistRepository(
+class ChecklistRepository @Inject constructor(
     private val checklistDao: ChecklistDao,
     private val personDao: PersonDao
 ) {
