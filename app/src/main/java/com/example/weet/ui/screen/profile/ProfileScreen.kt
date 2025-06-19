@@ -17,7 +17,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.shape.CircleShape
-
+import androidx.compose.ui.platform.LocalContext
+import com.example.weet.ui.screen.popup.ChecklistPopup
+import com.example.weet.viewmodel.ChecklistViewModel
 
 
 @Composable
@@ -26,18 +28,21 @@ fun ProfileScreen(
     onBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val photoUrl by viewModel.photoUrl.collectAsState()
+    val name by viewModel.name.collectAsState()
+    val relationship by viewModel.relationship.collectAsState()
+    val historyMessage by viewModel.historyMessage.collectAsState()
+    val score by viewModel.relationshipScore.collectAsState()
 
+    val checklistViewModel: ChecklistViewModel = hiltViewModel()
+    var showChecklistPopup by remember { mutableStateOf(false) }
+    var popupTime by remember { mutableStateOf("") }
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { viewModel.updatePhotoUrl(it.toString()) }
     }
-
-    val name by viewModel.name.collectAsState()
-    val relationship by viewModel.relationship.collectAsState()
-    val historyMessage by viewModel.historyMessage.collectAsState()
-    val score by viewModel.relationshipScore.collectAsState()
 
     Column(
         modifier = Modifier
@@ -91,7 +96,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 이름
         OutlinedTextField(
             value = name,
             onValueChange = { viewModel.updateName(it) },
@@ -102,7 +106,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 태그
         OutlinedTextField(
             value = relationship,
             onValueChange = { viewModel.updateRelationship(it) },
@@ -113,7 +116,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 메모
         OutlinedTextField(
             value = historyMessage,
             onValueChange = { viewModel.updateHistoryMessage(it) },
@@ -129,14 +131,50 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { viewModel.savePerson(score) },
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .height(48.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text("Save")
+            Button(
+                onClick = { viewModel.savePerson(score) },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
+                Text("Save")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = { showChecklistPopup = true },
+                enabled = personId != null,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
+                Text("Checklist")
+            }
         }
     }
-}
 
+    // ✅ ChecklistPopup 연결
+    if (showChecklistPopup && personId != null) {
+        val tagWeight = when (relationship.lowercase()) {
+            "family" -> 1.2
+            "friend" -> 1.0
+            "business" -> 0.8
+            else -> 1.0
+        }
+
+        ChecklistPopup(
+            personId = personId,
+            personTagWeight = tagWeight,
+            popupTime = popupTime,
+            onPopupTimeChange = { popupTime = it },
+            context = context,
+            viewModel = checklistViewModel,
+            onDismiss = { showChecklistPopup = false }
+        )
+    }
+}

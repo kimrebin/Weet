@@ -1,31 +1,38 @@
 package com.example.weet.ui.screen.popup
 
+import android.app.TimePickerDialog
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import com.example.weet.data.local.entity.ChecklistResultEntity
-
-import com.example.weet.viewmodel.ChecklistViewModel
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.weet.data.local.entity.ChecklistResultEntity
 import com.example.weet.data.local.entity.PersonEntity
-import com.example.weet.repository.PersonRepository
-
+import com.example.weet.viewmodel.ChecklistViewModel
+import java.util.*
 
 @Composable
 fun SchedulePopup(
     people: List<PersonEntity>,
+    personId: Int?,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     var selectedPerson by remember { mutableStateOf<PersonEntity?>(null) }
     var showChecklist by remember { mutableStateOf(false) }
+    var popupTime by remember { mutableStateOf("시간 미설정") }
+
+    LaunchedEffect(personId) {
+        if (personId != null) {
+            selectedPerson = people.find { it.id == personId }
+            showChecklist = true
+        }
+    }
 
     if (!showChecklist) {
         AlertDialog(
@@ -76,23 +83,25 @@ fun SchedulePopup(
             ChecklistPopup(
                 personId = person.id,
                 personTagWeight = tagWeight,
+                popupTime = popupTime,
+                onPopupTimeChange = { popupTime = it },
+                context = context,
                 onDismiss = onDismiss
             )
         }
     }
 }
 
-
 @Composable
 fun ChecklistPopup(
     personId: Int,
     personTagWeight: Double,
-    viewModel: ChecklistViewModel? = null,
+    popupTime: String,
+    onPopupTimeChange: (String) -> Unit,
+    context: Context,
+    viewModel: ChecklistViewModel = viewModel(),
     onDismiss: () -> Unit
 ) {
-    val actualViewModel = viewModel ?: viewModel<ChecklistViewModel>()
-
-    // 그 아래에서는 이제 actualViewModel 사용
     var frequency by remember { mutableStateOf<Float?>(null) }
     var emotion by remember { mutableStateOf<Float?>(null) }
     var distance by remember { mutableStateOf<Float?>(null) }
@@ -117,6 +126,23 @@ fun ChecklistPopup(
                 RadioOption("보통 (가끔 의지하거나 대화함)", 0.5f, distance) { distance = it }
                 RadioOption("심리적으로 거리가 있는 편", 0.0f, distance) { distance = it }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text("팝업 시간 설정: $popupTime")
+                Button(onClick = {
+                    val calendar = Calendar.getInstance()
+                    TimePickerDialog(
+                        context,
+                        { _, hour, minute ->
+                            onPopupTimeChange(String.format("%02d:%02d", hour, minute))
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                }) {
+                    Text("시간 설정")
+                }
             }
         },
         confirmButton = {
@@ -125,7 +151,7 @@ fun ChecklistPopup(
                     val rqs = ChecklistViewModel.calculateRQS(
                         frequency!!, emotion!!, distance!!, personTagWeight
                     )
-                    actualViewModel.saveChecklist(
+                    viewModel.saveChecklist(
                         ChecklistResultEntity(
                             personId = personId,
                             frequencyScore = frequency!!,
@@ -173,4 +199,3 @@ fun RadioOption(
         Text(text, Modifier.padding(start = 8.dp))
     }
 }
-
