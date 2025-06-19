@@ -17,32 +17,34 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.platform.LocalContext
-import com.example.weet.ui.screen.popup.ChecklistPopup
-import com.example.weet.viewmodel.ChecklistViewModel
+import androidx.navigation.NavController
+
 
 
 @Composable
 fun ProfileScreen(
     personId: Int?,
     onBack: () -> Unit,
+    navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val photoUrl by viewModel.photoUrl.collectAsState()
-    val name by viewModel.name.collectAsState()
-    val relationship by viewModel.relationship.collectAsState()
-    val historyMessage by viewModel.historyMessage.collectAsState()
-    val score by viewModel.relationshipScore.collectAsState()
 
-    val checklistViewModel: ChecklistViewModel = hiltViewModel()
-    var showChecklistPopup by remember { mutableStateOf(false) }
-    var popupTime by remember { mutableStateOf("") }
+    LaunchedEffect(personId) {
+        personId?.let { viewModel.loadPerson(it) }
+    }
+
+    val photoUrl by viewModel.photoUrl.collectAsState()
+
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { viewModel.updatePhotoUrl(it.toString()) }
     }
+
+    val name by viewModel.name.collectAsState()
+    val relationship by viewModel.relationship.collectAsState()
+    val historyMessage by viewModel.historyMessage.collectAsState()
+    val score by viewModel.relationshipScore.collectAsState()
 
     Column(
         modifier = Modifier
@@ -63,7 +65,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ✅ 이미지 선택 영역
+        // 이미지 선택 영역
         Box(
             modifier = Modifier
                 .size(150.dp)
@@ -96,85 +98,61 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // 이름
         OutlinedTextField(
             value = name,
-            onValueChange = { viewModel.updateName(it) },
+            onValueChange = {}, // 변경 불가
             label = { Text("Name") },
             singleLine = true,
+            readOnly = true,
+            enabled = true, // UI 상 비활성화 (회색 처리)
             modifier = Modifier.fillMaxWidth(0.9f)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // 태그
         OutlinedTextField(
             value = relationship,
-            onValueChange = { viewModel.updateRelationship(it) },
-            label = { Text("Tag (e.g. Family, School)") },
+            onValueChange = {}, // 변경 불가
+            label = { Text("Tag") },
             singleLine = true,
+            readOnly = true,
+            enabled = true, // UI 상 비활성화
             modifier = Modifier.fillMaxWidth(0.9f)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // 메모
         OutlinedTextField(
             value = historyMessage,
             onValueChange = { viewModel.updateHistoryMessage(it) },
             label = { Text("Memo") },
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .height(100.dp)
+                .height(200.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         ScoreDonut(score = score)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        Button(
+            onClick = {
+                viewModel.savePerson(score)
+                navController.navigate("main") {
+                    popUpTo("profile/{personId}") { inclusive = true }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+                .height(48.dp)
         ) {
-            Button(
-                onClick = { viewModel.savePerson(score) },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-            ) {
-                Text("Save")
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = { showChecklistPopup = true },
-                enabled = personId != null,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-            ) {
-                Text("Checklist")
-            }
+            Text("Save")
         }
-    }
-
-    // ✅ ChecklistPopup 연결
-    if (showChecklistPopup && personId != null) {
-        val tagWeight = when (relationship.lowercase()) {
-            "family" -> 1.2
-            "friend" -> 1.0
-            "business" -> 0.8
-            else -> 1.0
-        }
-
-        ChecklistPopup(
-            personId = personId,
-            personTagWeight = tagWeight,
-            popupTime = popupTime,
-            onPopupTimeChange = { popupTime = it },
-            context = context,
-            viewModel = checklistViewModel,
-            onDismiss = { showChecklistPopup = false }
-        )
     }
 }
+

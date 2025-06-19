@@ -35,7 +35,8 @@ fun AppNavHost(navController: NavHostController) {
             }
             ProfileScreen(
                 personId = personId,
-                onBack = {navController.popBackStack()}
+                onBack = {navController.popBackStack()},
+                navController = navController
             )
         }
 
