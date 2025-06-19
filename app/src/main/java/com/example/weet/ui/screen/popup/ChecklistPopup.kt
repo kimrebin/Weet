@@ -14,12 +14,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weet.data.local.entity.ChecklistResultEntity
 import com.example.weet.data.local.entity.PersonEntity
 import com.example.weet.viewmodel.ChecklistViewModel
+import com.example.weet.viewmodel.ProfileViewModel
+import kotlinx.coroutines.launch
 import java.util.*
 
 @Composable
 fun SchedulePopup(
     people: List<PersonEntity>,
     personId: Int?,
+    profileViewModel: ProfileViewModel, // ✅ 추가됨
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -86,6 +89,8 @@ fun SchedulePopup(
                 popupTime = popupTime,
                 onPopupTimeChange = { popupTime = it },
                 context = context,
+                viewModel = viewModel(),
+                profileViewModel = profileViewModel, // ✅ 전달
                 onDismiss = onDismiss
             )
         }
@@ -100,8 +105,10 @@ fun ChecklistPopup(
     onPopupTimeChange: (String) -> Unit,
     context: Context,
     viewModel: ChecklistViewModel = viewModel(),
+    profileViewModel: ProfileViewModel,
     onDismiss: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var frequency by remember { mutableStateOf<Float?>(null) }
     var emotion by remember { mutableStateOf<Float?>(null) }
     var distance by remember { mutableStateOf<Float?>(null) }
@@ -148,21 +155,24 @@ fun ChecklistPopup(
         confirmButton = {
             Button(onClick = {
                 if (frequency != null && emotion != null && distance != null) {
-                    val rqs = ChecklistViewModel.calculateRQS(
-                        frequency!!, emotion!!, distance!!, personTagWeight
-                    )
-                    viewModel.saveChecklist(
-                        ChecklistResultEntity(
-                            personId = personId,
-                            frequencyScore = frequency!!,
-                            emotionScore = emotion!!,
-                            distanceScore = distance!!,
-                            tagWeight = personTagWeight,
-                            rqsScore = rqs
-                        ),
-                        tagWeight = personTagWeight
-                    )
-                    onDismiss()
+                    coroutineScope.launch {
+                        val rqs = ChecklistViewModel.calculateRQS(
+                            frequency!!, emotion!!, distance!!, personTagWeight
+                        )
+                        viewModel.saveChecklist(
+                            ChecklistResultEntity(
+                                personId = personId,
+                                frequencyScore = frequency!!,
+                                emotionScore = emotion!!,
+                                distanceScore = distance!!,
+                                tagWeight = personTagWeight,
+                                rqsScore = rqs
+                            ),
+                            tagWeight = personTagWeight
+                        )
+                        profileViewModel.loadPerson(personId)
+                        onDismiss()
+                    }
                 }
             }) {
                 Text("저장")

@@ -16,6 +16,8 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
+
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -30,27 +32,17 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "weet-db"
-        )
-            .addMigrations(MIGRATION_1_2) // 마이그레이션 적용
-            //.fallbackToDestructiveMigration() // 필요시 사용 (개발 중)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun providePersonDao(db: AppDatabase): PersonDao = db.personDao()
+        ).build()
 
     @Provides
     fun provideChecklistDao(db: AppDatabase): ChecklistDao = db.checklistDao()
 
     @Provides
-    @Singleton
-    fun providePersonRepository(dao: PersonDao): PersonRepository {
-        return PersonRepositoryImpl(dao)
-    }
+    fun providePersonDao(db: AppDatabase): PersonDao = db.personDao()
+
 }
