@@ -4,7 +4,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weet.repository.Person
+import com.example.weet.data.local.entity.PersonEntity
+
 
 import com.example.weet.repository.PersonRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,10 +24,10 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     val personByTag = repository.getAllPersons()
-        .map { list: List<Person> ->
+        .map { list: List<PersonEntity> ->
             val grouped = list.groupBy { it.tag }
             val defaultTags = listOf("family", "friend", "business")
-            val complete = mutableMapOf<String, List<Person>>()
+            val complete = mutableMapOf<String, List<PersonEntity>>()
             for (tag in defaultTags) {
                 complete[tag] = grouped[tag] ?: emptyList()
             }

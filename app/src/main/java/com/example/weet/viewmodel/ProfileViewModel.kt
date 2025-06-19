@@ -62,12 +62,14 @@ class ProfileViewModel(
     }
     fun loadPerson(personId: Int?) {
         viewModelScope.launch {
-            repository.getPersonById(personId).collect { person ->
-                person?.let {
-                    _relationshipScore.value = it.relationshipScore
-                    _name.value = it.name
-                    _relationship.value = it.relationship
-                    _historyMessage.value = it.category
+            if (personId != null) {
+                repository.getPersonById(personId).collect { person ->
+                    person?.let {
+                        _relationshipScore.value = it.relationshipScore
+                        _name.value = it.name
+                        _relationship.value = it.relationship
+                        _historyMessage.value = it.category
+                    }
                 }
             }
         }

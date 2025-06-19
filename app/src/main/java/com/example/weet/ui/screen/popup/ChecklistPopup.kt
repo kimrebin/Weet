@@ -15,15 +15,16 @@ import com.example.weet.data.local.entity.ChecklistResultEntity
 
 import com.example.weet.viewmodel.ChecklistViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.weet.repository.Person
+import com.example.weet.data.local.entity.PersonEntity
+import com.example.weet.repository.PersonRepository
 
 
 @Composable
 fun SchedulePopup(
-    people: List<Person>,
+    people: List<PersonEntity>,
     onDismiss: () -> Unit
 ) {
-    var selectedPerson by remember { mutableStateOf<Person?>(null) }
+    var selectedPerson by remember { mutableStateOf<PersonEntity?>(null) }
     var showChecklist by remember { mutableStateOf(false) }
 
     if (!showChecklist) {
