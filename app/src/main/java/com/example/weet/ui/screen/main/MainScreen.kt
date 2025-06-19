@@ -37,17 +37,18 @@ fun MainScreen(
             onTagSelected = { selectedTag = it }
         )
 
-        MindMapSection(
-            persons = persons,
-            onPersonClick = onPersonClick
-        )
-
+        Box(modifier = Modifier.weight(1f)) {
+            MindMapSection(
+                persons = persons,
+                onPersonClick = onPersonClick
+            )
+        }
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(10.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             Button(onClick = onAddPerson) {

@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weet.data.local.entity.ChecklistResultEntity
 import com.example.weet.repository.ChecklistRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.roundToInt
-
-class ChecklistViewModel(
+@HiltViewModel
+class ChecklistViewModel @Inject constructor(
     private val repository: ChecklistRepository
 ) : ViewModel() {
 
