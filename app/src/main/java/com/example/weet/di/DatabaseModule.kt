@@ -10,6 +10,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
+import com.example.weet.repository.PersonRepository
+import com.example.weet.repository.PersonRepositoryImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -26,7 +28,15 @@ object DatabaseModule {
     }
 
     @Provides
+    @Singleton
     fun providePersonDao(db: AppDatabase): PersonDao {
         return db.personDao()
     }
+
+    @Provides
+    @Singleton
+    fun providePersonRepository(dao: PersonDao): PersonRepository {
+        return PersonRepositoryImpl(dao)
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.example.weet.ui.nevigation
+package com.example.weet.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -15,21 +15,17 @@ fun AppNavHost(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = "main"
-    ){
-
+    ) {
 
         composable("main") {
             MainScreen(
-                onPersonClick = { personId ->
-                    navController.navigate("profile/$personId")
-                },
-                onOpenChecklist = {
-                    navController.navigate("checklist")
-                }
-                /*onOpenSettings = {
-                    navController.navigate("settings")
-                }*/
+                onPersonClick = { personId -> navController.navigate("profile/$personId") },
+                onAddPerson = { navController.navigate("addPerson") } // ✅ 이 부분!
             )
+        }
+
+        composable("addPerson") {
+            AddPersonScreen(onPersonAdded = { navController.popBackStack() })
         }
 
         composable("profile/{personId}") {backStackEntry ->
