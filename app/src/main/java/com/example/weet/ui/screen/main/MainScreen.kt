@@ -21,9 +21,10 @@ import com.example.weet.repository.PersonRepository
 
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = hiltViewModel(),
-    onPersonClick: (personId: Int) -> Unit,
-    onAddPerson: () -> Unit, // 새로운 사람 추가용 화면으로 이동
+viewModel: MainViewModel = hiltViewModel(),
+onPersonClick: (personId: Int) -> Unit,
+onAddPerson: () -> Unit,
+onRelationshipClick: () -> Unit // (추가!)
 ) {
     val personsByTag by viewModel.personByTag.collectAsState(initial = emptyMap())
     val tags = personsByTag.keys.ifEmpty { listOf("family", "friend", "business") }.toList()
@@ -53,6 +54,9 @@ fun MainScreen(
         ) {
             Button(onClick = onAddPerson) {
                 Text(text = "+ ADD")
+            }
+            Button(onClick = onRelationshipClick) {
+                Text(text = "relationship map")
             }
         }
     }
