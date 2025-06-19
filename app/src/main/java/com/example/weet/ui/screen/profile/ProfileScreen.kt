@@ -148,7 +148,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ Checklist 연결 버튼
+        // Checklist 연결 버튼
         Button(
             onClick = { showChecklistPopup = true },
             enabled = personId != null,
@@ -158,7 +158,7 @@ fun ProfileScreen(
         }
     }
 
-    // ✅ ChecklistPopup 표시
+    // ChecklistPopup 표시
     if (showChecklistPopup && personId != null) {
         val tagWeight = when (relationship.lowercase()) {
             "family" -> 1.2
@@ -174,7 +174,10 @@ fun ProfileScreen(
             onPopupTimeChange = { popupTime = it },
             context = LocalContext.current,
             viewModel = checklistViewModel,
-            onDismiss = { showChecklistPopup = false }
+            onDismiss = {
+                viewModel.loadPerson(personId)
+                showChecklistPopup = false
+            }
         )
     }
 }

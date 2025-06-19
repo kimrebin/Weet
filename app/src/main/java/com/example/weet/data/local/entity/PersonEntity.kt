@@ -2,6 +2,7 @@ package com.example.weet.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.squareup.wire.Message
 
 @Entity(tableName = "persons")
 data class PersonEntity(
@@ -10,6 +11,7 @@ data class PersonEntity(
     val photoUrl: String?,
     val tag: String,
     val score: Int,
+    val historyMessage: String?,
     val relationshipScore: Int,
     val relationship: String,
     val category: String,
