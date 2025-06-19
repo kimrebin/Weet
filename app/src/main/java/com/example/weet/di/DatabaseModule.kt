@@ -3,6 +3,7 @@ package com.example.weet.di
 import android.content.Context
 import androidx.room.Room
 import com.example.weet.data.local.AppDatabase
+import com.example.weet.data.local.dao.ChecklistDao
 import com.example.weet.data.local.dao.PersonDao
 import dagger.Module
 import dagger.Provides
@@ -31,6 +32,11 @@ object DatabaseModule {
     @Singleton
     fun providePersonDao(db: AppDatabase): PersonDao {
         return db.personDao()
+    }
+
+    @Provides
+    fun provideChecklistDao(db: AppDatabase): ChecklistDao {
+        return db.checklistDao()
     }
 
     @Provides
