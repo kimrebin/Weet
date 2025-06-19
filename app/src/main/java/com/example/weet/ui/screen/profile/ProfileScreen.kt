@@ -39,8 +39,6 @@ fun ProfileScreen(
     val relationship by viewModel.relationship.collectAsState()
     val historyMessage by viewModel.historyMessage.collectAsState()
     val score by viewModel.relationshipScore.collectAsState()
-
-
     val checklistViewModel: ChecklistViewModel = hiltViewModel()
 
 

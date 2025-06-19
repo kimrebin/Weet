@@ -1,5 +1,6 @@
 package com.example.weet.viewmodel
 
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weet.data.local.entity.PersonEntity
@@ -40,38 +41,42 @@ class ProfileViewModel @Inject constructor(
     private val _photoUrl = MutableStateFlow("")
     val photoUrl = _photoUrl.asStateFlow()
 
-    fun updatePhotoUrl(uri: String) {
-        _photoUrl.value = uri
+    fun updatePhotoUrl(url : String) {
+        _photoUrl.value = url
     }
+
+    private var currentPersonId: Int? = null
 
     fun updateName(value: String) { _name.value = value }
     fun updateRelationship(value: String) { _relationship.value = value }
     fun updateHistoryMessage(value: String) { _historyMessage.value = value }
 
-    fun savePerson(relationshipScore: Int = 50) {
+    fun savePerson(relationshipScore: Int = 100) {
         viewModelScope.launch {
+            val id = currentPersonId ?: return@launch
             val person = PersonEntity(
+                id = id,
                 name = _name.value,
-                relationship = _relationship.value,
-                relationshipScore = relationshipScore,
-                category = _historyMessage.value,
-                id = 0,
-                photoUrl = "",
-                tag = "",
+                tag = _relationship.value,
+                photoUrl = _photoUrl.value,
                 score = 0,
+                relationshipScore = relationshipScore,
+                relationship = "",
+                category = "",
                 historyMessage = _historyMessage.value
             )
             repository.insertPerson(person)
         }
     }
     fun loadPerson(personId: Int) {
+        currentPersonId = personId
         viewModelScope.launch {
             val person = repository.getPersonById(personId)
             person?.let {
                 _name.value = it.name
                 _relationship.value = it.tag
                 _photoUrl.value = it.photoUrl ?: ""
-                _historyMessage.value = ""
+                _historyMessage.value = it.historyMessage ?: ""
                 _relationshipScore.value = it.relationshipScore
             }
         }

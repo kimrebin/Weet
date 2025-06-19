@@ -20,24 +20,24 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    // 마이그레이션 정의
+    // 마이그레이션 1 → 2: historyMessage + photoUrl 컬럼 추가
     private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
-            // 새로 추가된 컬럼에 대한 SQL 실행
             database.execSQL("ALTER TABLE persons ADD COLUMN historyMessage TEXT")
+            database.execSQL("ALTER TABLE persons ADD COLUMN photoUrl TEXT")
         }
     }
 
-    @Singleton
     @Provides
+    @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "weet-db"
         )
-            .addMigrations(MIGRATION_1_2) // 마이그레이션 추가
-            //.fallbackToDestructiveMigration() // ← 필요시 개발 중에만 잠깐 사용할 수 있음
+            .addMigrations(MIGRATION_1_2) // 마이그레이션 적용
+            //.fallbackToDestructiveMigration() // 필요시 사용 (개발 중)
             .build()
     }
 
