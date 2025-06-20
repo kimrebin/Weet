@@ -1,4 +1,5 @@
 package com.example.weet.viewmodel
+
 import androidx.compose.runtime.mutableStateOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.ViewModel
@@ -26,7 +27,7 @@ class MainViewModel @Inject constructor(
     private val repository: PersonRepository
 ) : ViewModel() {
 
-    val allFriends: Flow<List<Friend>> =
+    val allFriends: StateFlow<List<Friend>> =
         repository.getAllPersons()
             .map { list -> list.map { it.toFriend() } } // 변환!
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())

@@ -21,10 +21,10 @@ import com.example.weet.repository.PersonRepository
 
 @Composable
 fun MainScreen(
-viewModel: MainViewModel = hiltViewModel(),
-onPersonClick: (personId: Int) -> Unit,
-onAddPerson: () -> Unit,
-onRelationshipClick: () -> Unit // (추가!)
+    viewModel: MainViewModel = hiltViewModel(),
+    onPersonClick: (personId: Int) -> Unit,
+    onAddPerson: () -> Unit,
+    onRelationshipClick: () -> Unit // (추가!)
 ) {
     val personsByTag by viewModel.personByTag.collectAsState(initial = emptyMap())
     val tags = personsByTag.keys.ifEmpty { listOf("family", "friend", "business") }.toList()

@@ -19,12 +19,14 @@ data class PersonEntity(
 // relationshipMap UI를 위해
 data class Friend(
     val name: String,
-    val score: Int
+    val score: Int,
+    val tag: String
 )
 
 fun PersonEntity.toFriend(): Friend {
     return Friend(
         name = this.name,
-        score = this.relationshipScore
+        score = this.relationshipScore,
+        tag = this.tag
     )
 }

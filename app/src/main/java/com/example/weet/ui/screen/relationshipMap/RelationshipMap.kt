@@ -1,5 +1,6 @@
 package com.example.weet.ui.screen.relationshipMap
 
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,43 +12,50 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
-import com.example.weet.data.local.entity.Friend
-import android.graphics.Paint
-import kotlin.math.*
-import androidx.compose.foundation.layout.BoxScope
+import kotlin.math.cos
+import kotlin.math.sin
+//import kotlin.math.toRadians
 import com.example.weet.ui.theme.Purple80
-
-//import androidx.compose.foundation.layout.align
-
+import java.lang.StrictMath.toRadians
+//import com.example.weet.data.local.entity.toFriend
+import com.example.weet.data.local.entity.Friend
 
 @Composable
-fun RelationshipMap(friends: List<Friend>) {
+fun RelationshipMap(
+    allFriends: List<Friend>,
+    selectedTag: String
+) {
+    val friends = allFriends.filter { it.tag == selectedTag }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF1FFFF)) // 💜 연보라 배경
+            .background(Purple80) // 💜 전체 배경 보라색
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val center = Offset(size.width / 2, size.height / 2)
-            val spacing = 250f
-            val radius = 50f
-            val textOffsetY = 20f
 
-            // ✅ 중앙 원 먼저 그림 (배경 역할)
+            val innerRadius = 250f  // 점수 51~100
+            val outerRadius = 420f  // 점수 0~50
+            val nodeRadius = 50f
+
+            // 1. 파란 원 영역만 흰색으로 채우기
             drawCircle(
-                color = Color.LightGray.copy(alpha = 1.0f), // 완전 불투명
-                radius = 60f,
+                color = Color.White,
+                radius = outerRadius,
                 center = center
             )
 
-            // ✅ 그 다음 친구 노드들과 선을 그림 (위에 올라오게)
+            // 2. 친구 노드 배치
             friends.forEachIndexed { index, friend ->
-                val angle = Math.toRadians((360.0 / friends.size) * index)
-                val friendX = center.x + cos(angle).toFloat() * spacing
-                val friendY = center.y + sin(angle).toFloat() * spacing
+                val angle = toRadians((360.0 / friends.size) * index)
+                val relationshipScore = friend.score.coerceIn(0, 100)
+                val distance = if (relationshipScore >= 51) innerRadius else outerRadius
+
+                val friendX = center.x + cos(angle).toFloat() * distance
+                val friendY = center.y + sin(angle).toFloat() * distance
                 val friendOffset = Offset(friendX, friendY)
 
                 drawLine(
@@ -58,8 +66,8 @@ fun RelationshipMap(friends: List<Friend>) {
                 )
 
                 drawCircle(
-                    color = Color(0xFFA8E6A1),
-                    radius = radius,
+                    color = Color(0xFFA8E6A1), // 초록 원
+                    radius = nodeRadius,
                     center = friendOffset
                 )
 
@@ -73,16 +81,22 @@ fun RelationshipMap(friends: List<Friend>) {
                     }
                 )
             }
+
+            // 3. 중앙 원 (빨간 테두리 없이 흰색 안에 아이콘만 표시)
+            drawCircle(
+                color = Color(0xFFCFCBDE),
+                radius = 60f,
+                center = center
+            )
         }
 
-
-        // 👉 Icon을 Box 내부에 포함
+        // 중앙 아이콘
         Icon(
             imageVector = Icons.Default.Person,
             contentDescription = "Me",
             modifier = Modifier
                 .size(48.dp)
-                .align(Alignment.Center), // 이제 정상 작동
+                .align(Alignment.Center),
             tint = Color.Black
         )
     }
