@@ -174,6 +174,7 @@ fun ProfileScreen(
             onPopupTimeChange = { popupTime = it },
             context = LocalContext.current,
             viewModel = checklistViewModel,
+            profileViewModel = viewModel,
             onDismiss = {
                 viewModel.loadPerson(personId)
                 showChecklistPopup = false

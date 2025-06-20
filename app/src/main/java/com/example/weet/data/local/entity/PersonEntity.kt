@@ -14,7 +14,7 @@ data class PersonEntity(
     val historyMessage: String?,
     val relationshipScore: Int,
     val relationship: String,
-    val category: String
+    val category: String,
 )
 // relationshipMap UI를 위해
 data class Friend(

@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface PersonRepository {
     suspend fun insertPerson(person: PersonEntity)
     fun getAllPersons(): Flow<List<PersonEntity>>
-    suspend fun getPersonById(id: Int): PersonEntity?
+    fun getPersonById(id: Int): Flow<PersonEntity>
+
 }

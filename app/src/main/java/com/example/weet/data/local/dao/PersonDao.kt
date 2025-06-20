@@ -12,22 +12,19 @@ import com.example.weet.data.local.entity.PersonEntity
 interface PersonDao {
 
     @Query("SELECT * FROM persons")
-    fun getAllPersons(): Flow<List<com.example.weet.data.local.entity.PersonEntity>>
+    fun getAllPersons(): Flow<List<PersonEntity>>
 
     @Query("SELECT * FROM persons WHERE id = :id")
-    fun getPersonById(id: Int?): Flow<com.example.weet.data.local.entity.PersonEntity?>
+    fun getPersonById(id: Int): Flow<PersonEntity>
 
     @Query("SELECT * FROM persons WHERE id = :id")
-    suspend fun getPersonByIdOnce(id: Int): com.example.weet.data.local.entity.PersonEntity?
+    suspend fun getPersonByIdOnce(id: Int): PersonEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPerson(person: com.example.weet.data.local.entity.PersonEntity)
+    suspend fun insertPerson(person: PersonEntity)
 
     @Delete
-    suspend fun deletePerson(person: com.example.weet.data.local.entity.PersonEntity)
-
-    @Query("SELECT * FROM persons WHERE id = :id")
-    suspend fun getPersonById(id: Int): PersonEntity?
-
+    suspend fun deletePerson(person: PersonEntity)
 }
+
 
