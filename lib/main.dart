@@ -1,33 +1,27 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'login_page.dart';
-import 'chat_page.dart'; // <-- 이 줄을 꼭 추가해야 'ChatPage'를 찾을 수 있어요!
+import 'chat_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // [중요] 여기에 본인의 Supabase URL과 Anon Key를 넣으세요!
   await Supabase.initialize(
     url: 'https://nsvunavsdjegjppsqopw.supabase.co',
     anonKey: 'sb_publishable_PXSlvkjX62rOYAkyv9L2Kw_Yxm2MNH-',
   );
-
   runApp(const WeetApp());
 }
 
 class WeetApp extends StatelessWidget {
   const WeetApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Weet',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF5C6AC4),
-      ),
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF5C6AC4)),
       home: const AuthCheck(),
     );
   }
@@ -35,197 +29,139 @@ class WeetApp extends StatelessWidget {
 
 class AuthCheck extends StatelessWidget {
   const AuthCheck({super.key});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
-        final session = snapshot.data?.session;
-        if (session != null) {
-          return const WeetHomePage();
-        } else {
-          return const LoginPage();
-        }
+        if (snapshot.data?.session != null) return const WeetHomePage();
+        return const LoginPage();
       },
     );
   }
 }
 
 class Person {
-  Person({required this.id, required this.name, required this.category, required this.score});
-  final String id; // DB의 UUID를 저장
+  Person({required this.id, required this.name, required this.category, required this.score, this.relatedPersonId, this.uid});
+  final String id;
   String name;
   String category;
   int score;
+  String? relatedPersonId;
+  String? uid; // 친구의 실제 계정 UID (채팅용)
 }
 
 class WeetHomePage extends StatefulWidget {
   const WeetHomePage({super.key});
-
   @override
   State<WeetHomePage> createState() => _WeetHomePageState();
 }
 
 class _WeetHomePageState extends State<WeetHomePage> {
   final supabase = Supabase.instance.client;
-  final List<String> _categories = <String>['Family', 'Friends', 'Business', 'Other'];
   List<Person> _people = [];
-  String _selectedCategory = 'All';
 
   @override
   void initState() {
     super.initState();
-    _fetchPeople(); // 앱 실행 시 데이터 불러오기
+    _fetchPeople();
   }
 
-  // 데이터 불러오기
   Future<void> _fetchPeople() async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
-
-    try {
-      final data = await supabase
-          .from('people')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at');
-          
-      setState(() {
-        _people = (data as List).map((item) => Person(
-          id: item['id'],
-          name: item['name'],
-          category: item['category'],
-          score: item['score'],
-        )).toList();
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('데이터 로드 실패: $e')));
-      }
-    }
+    final data = await supabase.from('people').select().eq('user_id', userId).order('created_at');
+    setState(() {
+      _people = (data as List).map((item) => Person(
+        id: item['id'],
+        name: item['name'],
+        category: item['category'],
+        score: item['score'],
+        relatedPersonId: item['related_person_id'],
+        uid: item['friend_uid'],
+      )).toList();
+    });
   }
 
-  // 데이터 추가
-  Future<void> _addPerson(String name, String category, int score) async {
-    final userId = supabase.auth.currentUser?.id;
-    try {
-      await supabase.from('people').insert({
-        'user_id': userId,
-        'name': name,
-        'category': category,
-        'score': score,
-      });
-      _fetchPeople(); // 목록 갱신
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('추가 실패: $e')));
-      }
-    }
-  }
-
-  // 데이터 수정
-  Future<void> _updatePerson(Person p) async {
-    try {
-      await supabase.from('people').update({
-        'name': p.name,
-        'category': p.category,
-        'score': p.score,
-      }).eq('id', p.id);
-      _fetchPeople();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('수정 실패: $e')));
-      }
-    }
-  }
-
-  // 데이터 삭제
-  Future<void> _deletePerson(String id) async {
-    try {
-      await supabase.from('people').delete().eq('id', id);
-      _fetchPeople();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('삭제 실패: $e')));
-      }
-    }
-  }
-
-  List<Person> get _visiblePeople {
-    if (_selectedCategory == 'All') return _people;
-    return _people.where((p) => p.category == _selectedCategory).toList();
-  }
-
-  Future<void> _openAddPersonDialog() async {
-    final nameController = TextEditingController();
-    String category = _categories.first;
-    int score = 50;
-
-    await showDialog(
+  void _showMyQr() {
+    final myId = supabase.auth.currentUser?.id;
+    showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Add Person'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-              DropdownButtonFormField<String>(
-                value: category,
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (v) => setDialogState(() => category = v!),
-              ),
-              Slider(min: 0, max: 100, value: score.toDouble(), onChanged: (v) => setDialogState(() => score = v.round())),
-              Text('Score: $score'),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            FilledButton(onPressed: () {
-              if (nameController.text.isNotEmpty) {
-                _addPerson(nameController.text, category, score);
-                Navigator.pop(context);
-              }
-            }, child: const Text('Save')),
-          ],
+      builder: (context) => AlertDialog(
+        title: const Text('My QR Code'),
+        content: SizedBox(
+          width: 200, height: 200,
+          child: QrImageView(data: myId ?? '', version: QrVersions.auto, size: 200.0),
         ),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
       ),
     );
   }
 
-  Future<void> _openEditPersonDialog(Person person) async {
-    final nameController = TextEditingController(text: person.name);
-    String category = person.category;
-    int score = person.score;
+  void _openEditDialog(Person? person) {
+    final nameController = TextEditingController(text: person?.name);
+    String category = person?.category ?? 'Friends';
+    int score = person?.score ?? 50;
+    String? selectedRelatedId = person?.relatedPersonId;
+    String? friendUid = person?.uid;
 
-    await showDialog(
+    showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Edit Person'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-              DropdownButtonFormField<String>(
-                value: category,
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (v) => setDialogState(() => category = v!),
-              ),
-              Slider(min: 0, max: 100, value: score.toDouble(), onChanged: (v) => setDialogState(() => score = v.round())),
-              Text('Score: $score'),
-            ],
+          title: Text(person == null ? 'Add Person' : 'Edit Person'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
+                DropdownButtonFormField<String>(
+                  value: category,
+                  items: ['Family', 'Friends', 'Business', 'Other'].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  onChanged: (v) => setDialogState(() => category = v!),
+                ),
+                Slider(min: 0, max: 100, value: score.toDouble(), onChanged: (v) => setDialogState(() => score = v.round())),
+                const Divider(),
+                Text(friendUid == null ? "No Linked Account" : "Linked: ${friendUid!.substring(0,8)}..."),                ElevatedButton.icon(
+                  onPressed: () async {
+                    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const QrScannerPage()));
+                    if (result != null) setDialogState(() => friendUid = result);
+                  },
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Scan Friend QR'),
+                ),
+                DropdownButtonFormField<String?>(
+                  value: selectedRelatedId,
+                  hint: const Text('Connect to...'),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('None')),
+                    ..._people.where((p) => p.id != person?.id).map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
+                  ],
+                  onChanged: (v) => setDialogState(() => selectedRelatedId = v),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            FilledButton(onPressed: () {
-              person.name = nameController.text;
-              person.category = category;
-              person.score = score;
-              _updatePerson(person);
+            FilledButton(onPressed: () async {
+              final userId = supabase.auth.currentUser?.id;
+              final data = {
+                'user_id': userId,
+                'name': nameController.text,
+                'category': category,
+                'score': score,
+                'related_person_id': selectedRelatedId,
+                'friend_uid': friendUid,
+              };
+              if (person == null) {
+                await supabase.from('people').insert(data);
+              } else {
+                await supabase.from('people').update(data).eq('id', person.id);
+              }
+              _fetchPeople();
               Navigator.pop(context);
-            }, child: const Text('Update')),
+            }, child: const Text('Save')),
           ],
         ),
       ),
@@ -235,148 +171,112 @@ class _WeetHomePageState extends State<WeetHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-   // WeetHomePage의 build 함수 내 AppBar 부분 수정
-appBar: AppBar(
-  title: const Text('Weet Map'),
-  leading: IconButton(
-    icon: const Icon(Icons.logout),
-    onPressed: () => supabase.auth.signOut(),
-  ),
-  actions: [
-    // 채팅 페이지 이동 버튼 추가!
-    IconButton(
-      icon: const Icon(Icons.chat_bubble_outline),
-      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage())),
-    ),
-    IconButton(onPressed: _openAddPersonDialog, icon: const Icon(Icons.person_add_alt_1)),
-  ],
-),
-      body: Column(
-        children: [
-          _CategoryFilterBar(
-            categories: ['All', ..._categories],
-            selectedCategory: _selectedCategory,
-            onSelect: (v) => setState(() => _selectedCategory = v),
-          ),
-          Expanded(
-            child: RelationshipMap(
-              people: _visiblePeople,
-              onLongPress: (person) {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => Wrap(
-                    children: [
-                      ListTile(leading: const Icon(Icons.edit), title: const Text('Edit'), onTap: () { Navigator.pop(context); _openEditPersonDialog(person); }),
-                      ListTile(leading: const Icon(Icons.delete, color: Colors.red), title: const Text('Delete'), onTap: () { Navigator.pop(context); _deletePerson(person.id); }),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+      appBar: AppBar(
+        title: const Text('Weet Network'),
+        actions: [
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {
+            showModalBottomSheet(context: context, builder: (context) => ListView(
+              shrinkWrap: true,
+              children: _people.map((p) => ListTile(
+                title: Text(p.name),
+                trailing: const Icon(Icons.edit),
+                onTap: () { Navigator.pop(context); _openEditDialog(p); },
+              )).toList(),
+            ));
+          }),
+          IconButton(icon: const Icon(Icons.add), onPressed: () => _openEditDialog(null)),
         ],
+      ),
+      body: RelationshipMap(
+        people: _people,
+        onCenterTap: _showMyQr,
+        onPersonTap: (p) {
+          if (p.uid != null) {
+             // 1:1 채팅 페이지로 이동 로직 (ChatPage 수정 필요)
+             Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage()));
+          } else {
+             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('QR 스캔으로 계정을 먼저 연결해주세요!')));
+          }
+        },
+      ),
+    );
+  }
+}
+
+class QrScannerPage extends StatelessWidget {
+  const QrScannerPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan QR')),
+      body: MobileScanner(
+        onDetect: (capture) {
+          final List<Barcode> barcodes = capture.barcodes;
+          if (barcodes.isNotEmpty) Navigator.pop(context, barcodes.first.rawValue);
+        },
       ),
     );
   }
 }
 
 class RelationshipMap extends StatelessWidget {
-  const RelationshipMap({super.key, required this.people, required this.onLongPress});
+  const RelationshipMap({super.key, required this.people, required this.onPersonTap, required this.onCenterTap});
   final List<Person> people;
-  final Function(Person) onLongPress;
+  final Function(Person) onPersonTap;
+  final VoidCallback onCenterTap;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double size = math.min(constraints.maxWidth, constraints.maxHeight);
-        final Offset center = Offset(size / 2, size / 2);
-        final double maxRadius = size / 2 - 40;
-
-        return Center(
-          child: SizedBox(
-            width: size, height: size,
-            child: Stack(
-              children: [
-                CustomPaint(
-                  size: Size(size, size),
-                  painter: _ConnectionPainter(people: people, center: center, maxRadius: maxRadius),
-                ),
-                Positioned(left: center.dx - 26, top: center.dy - 26, child: _CenterNode()),
-                ...people.asMap().entries.map((entry) {
-                  final int index = entry.key;
-                  final Person person = entry.value;
-                  final double angle = (2 * math.pi / math.max(1, people.length)) * index;
-                  
-                  final double radiusFactor = (100 - person.score) / 100;
-                  final double radius = (radiusFactor * (maxRadius - 60)) + 60;
-
-                  final double x = center.dx + math.cos(angle) * radius;
-                  final double y = center.dy + math.sin(angle) * radius;
-
-                  return Positioned(
-                    left: x - 35, top: y - 35,
-                    child: GestureDetector(
-                      onLongPress: () => onLongPress(person),
-                      child: _PersonCircle(person: person),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final double size = math.min(constraints.maxWidth, constraints.maxHeight);
+      final Offset center = Offset(size / 2, size / 2);
+      final double maxRadius = size / 2 - 40;
+      Map<String, Offset> positions = {};
+      for (int i = 0; i < people.length; i++) {
+        final double angle = (2 * math.pi / math.max(1, people.length)) * i;
+        final double radius = ((100 - people[i].score) / 100 * (maxRadius - 60)) + 60;
+        positions[people[i].id] = Offset(center.dx + math.cos(angle) * radius, center.dy + math.sin(angle) * radius);
+      }
+      return Center(
+        child: SizedBox(width: size, height: size, child: Stack(children: [
+          CustomPaint(size: Size(size, size), painter: _NetworkPainter(people: people, center: center, positions: positions)),
+          Positioned(left: center.dx - 26, top: center.dy - 26, child: GestureDetector(onTap: onCenterTap, child: _CenterNode())),
+          ...people.map((p) => Positioned(left: positions[p.id]!.dx - 35, top: positions[p.id]!.dy - 35, 
+            child: GestureDetector(onTap: () => onPersonTap(p), child: _PersonCircle(person: p)))),
+        ])),
+      );
+    });
   }
 }
 
-class _ConnectionPainter extends CustomPainter {
-  _ConnectionPainter({required this.people, required this.center, required this.maxRadius});
+class _NetworkPainter extends CustomPainter {
+  _NetworkPainter({required this.people, required this.center, required this.positions});
   final List<Person> people;
   final Offset center;
-  final double maxRadius;
-
+  final Map<String, Offset> positions;
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black12..strokeWidth = 1.5;
-    for (int i = 0; i < people.length; i++) {
-      final double angle = (2 * math.pi / math.max(1, people.length)) * i;
-      final double radiusFactor = (100 - people[i].score) / 100;
-      final double radius = (radiusFactor * (maxRadius - 60)) + 60;
-      final Offset target = Offset(center.dx + math.cos(angle) * radius, center.dy + math.sin(angle) * radius);
-      canvas.drawLine(center, target, paint);
+    final pBase = Paint()..color = Colors.black12..strokeWidth = 1.0;
+    final pRel = Paint()..color = Colors.blueAccent.withOpacity(0.5)..strokeWidth = 2.0;
+    for (var p in people) {
+      canvas.drawLine(center, positions[p.id]!, pBase);
+      if (p.relatedPersonId != null && positions.containsKey(p.relatedPersonId)) {
+        canvas.drawLine(positions[p.id]!, positions[p.relatedPersonId]!, pRel);
+      }
     }
   }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  @override bool shouldRepaint(CustomPainter old) => true;
 }
 
 class _PersonCircle extends StatelessWidget {
   const _PersonCircle({required this.person});
   final Person person;
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 70, height: 70,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))
-        ],
-        border: Border.all(color: Colors.blueAccent.withOpacity(0.3), width: 2),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(person.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-          ),
-          Text('${person.score}', style: const TextStyle(fontSize: 10, color: Colors.blueAccent)),
-        ],
-      ),
+    return Container(width: 70, height: 70, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white, 
+      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      border: Border.all(color: person.uid != null ? Colors.blueAccent : Colors.grey.withOpacity(0.3))),
+      child: Center(child: Text(person.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10))),
     );
   }
 }
@@ -384,38 +284,7 @@ class _PersonCircle extends StatelessWidget {
 class _CenterNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 52, height: 52,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF5C6AC4)),
-      alignment: Alignment.center,
-      child: const Text('Me', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-    );
-  }
-}
-
-class _CategoryFilterBar extends StatelessWidget {
-  const _CategoryFilterBar({required this.categories, required this.selectedCategory, required this.onSelect});
-  final List<String> categories;
-  final String selectedCategory;
-  final ValueChanged<String> onSelect;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        height: 44,
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) => ChoiceChip(
-            label: Text(categories[index]),
-            selected: selectedCategory == categories[index],
-            onSelected: (_) => onSelect(categories[index]),
-          ),
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemCount: categories.length,
-        ),
-      ),
-    );
+    return Container(width: 52, height: 52, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF5C6AC4)),
+      child: const Center(child: Icon(Icons.qr_code, color: Colors.white, size: 24)));
   }
 }
