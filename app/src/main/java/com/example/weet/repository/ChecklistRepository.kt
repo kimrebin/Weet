@@ -3,16 +3,17 @@ package com.example.weet.repository
 import com.example.weet.data.local.dao.ChecklistDao
 import com.example.weet.data.local.dao.PersonDao
 import com.example.weet.data.local.entity.ChecklistResultEntity
-import com.example.weet.data.local.entity.PersonEntity
+import com.example.weet.viewmodel.ChecklistViewModel.Companion.calculateRQS
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class ChecklistRepository(
+class ChecklistRepository @Inject constructor(
     private val checklistDao: ChecklistDao,
     private val personDao: PersonDao
 ) {
 
-    suspend fun insertChecklistAndUpdateScore(result: ChecklistResultEntity, tagWeight: Float) {
+    suspend fun insertChecklistAndUpdateScore(result: ChecklistResultEntity, tagWeight: Double) {
         checklistDao.insertChecklist(result)
 
         // 점수 계산
@@ -47,7 +48,7 @@ class ChecklistRepository(
         return checklistDao.getChecklistHistory(personId)
     }
 
-    private fun calculateRQS(frequency: Float, emotion: Float, distance: Float, tagWeight: Float): Float {
+    private fun calculateRQS(frequency: Float, emotion: Float, distance: Float, tagWeight: Double): Double {
         val w1 = 0.4f
         val w2 = 0.3f
         val w3 = 0.2f

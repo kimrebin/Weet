@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weet.data.local.entity.ChecklistResultEntity
 import com.example.weet.repository.ChecklistRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class ChecklistViewModel(
+@HiltViewModel
+class ChecklistViewModel @Inject constructor(
     private val repository: ChecklistRepository
 ) : ViewModel() {
 
@@ -24,7 +27,7 @@ class ChecklistViewModel(
         }
     }
 
-    fun saveChecklist(result: ChecklistResultEntity, tagWeight: Float) {
+    fun saveChecklist(result: ChecklistResultEntity, tagWeight: Double) {
         viewModelScope.launch {
             repository.insertChecklistAndUpdateScore(result, tagWeight)
 
@@ -47,8 +50,8 @@ class ChecklistViewModel(
             frequency: Float,
             emotion: Float,
             distance: Float,
-            tagWeight: Float
-        ): Float {
+            tagWeight: Double
+        ): Double {
             val w1 = 0.4f
             val w2 = 0.3f
             val w3 = 0.2f

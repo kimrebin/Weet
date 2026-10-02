@@ -11,7 +11,7 @@ import com.example.weet.data.local.SettingsDataStore
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingScreen(navController: NavController, onBack: () -> Unit) {
+fun SettingsScreen(navController: NavController, onBack: () -> Unit) {
     var notificationInterval by remember { mutableStateOf(3) }
     var popupTime by remember { mutableStateOf("Not set") }
 
@@ -25,7 +25,7 @@ fun SettingScreen(navController: NavController, onBack: () -> Unit) {
 
         Text("Popup Time: $popupTime")
         Button(onClick = {
-            navController.navigate("schedule_popup")
+            navController.navigate("schedule")
         }) {
             Text("Set Popup Time")
         }

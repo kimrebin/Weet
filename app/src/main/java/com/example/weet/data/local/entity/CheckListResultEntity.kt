@@ -12,9 +12,9 @@ data class ChecklistResultEntity(
     val frequencyScore: Float,
     val emotionScore: Float,
     val distanceScore: Float,
-    val tagWeight: Float,  // 예: 가족=1.2, 친구=1.0, 직장=0.8 등
+    val tagWeight: Double,  // 예: 가족=1.2, 친구=1.0, 직장=0.8 등
 
-    val rqsScore: Float,   // 계산된 최종 점수 (0.0 ~ 1.0)
+    val rqsScore: Double,   // 계산된 최종 점수 (0.0 ~ 1.0)
 
     val timestamp: Long = System.currentTimeMillis() // 기록 시간
 )

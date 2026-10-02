@@ -1,29 +1,41 @@
 package com.example.weet.ui.screen.popup
 
+import android.app.TimePickerDialog
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import com.example.weet.data.local.entity.ChecklistResultEntity
-import com.example.weet.domain.model.Person
-import com.example.weet.viewmodel.ChecklistViewModel
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import com.example.weet.data.local.entity.ChecklistResultEntity
+import com.example.weet.data.local.entity.PersonEntity
+import com.example.weet.viewmodel.ChecklistViewModel
+import com.example.weet.viewmodel.ProfileViewModel
+import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun SchedulePopup(
-    people: List<Person>,
+    people: List<PersonEntity>,
+    personId: Int?,
+    profileViewModel: ProfileViewModel, // ✅ 추가됨
     onDismiss: () -> Unit
 ) {
-    var selectedPerson by remember { mutableStateOf<Person?>(null) }
+    val context = LocalContext.current
+    var selectedPerson by remember { mutableStateOf<PersonEntity?>(null) }
     var showChecklist by remember { mutableStateOf(false) }
+    var popupTime by remember { mutableStateOf("시간 미설정") }
+
+    LaunchedEffect(personId) {
+        if (personId != null) {
+            selectedPerson = people.find { it.id == personId }
+            showChecklist = true
+        }
+    }
 
     if (!showChecklist) {
         AlertDialog(
@@ -65,26 +77,38 @@ fun SchedulePopup(
         )
     } else {
         selectedPerson?.let { person ->
+            val tagWeight = when (person.tag.lowercase()) {
+                "family" -> 1.2
+                "friend" -> 1.0
+                "business" -> 0.8
+                else -> 1.0
+            }
             ChecklistPopup(
                 personId = person.id,
-                personTagWeight = person.tagWeight,
+                personTagWeight = tagWeight,
+                popupTime = popupTime,
+                onPopupTimeChange = { popupTime = it },
+                context = context,
+                viewModel = viewModel(),
+                profileViewModel = profileViewModel, // ✅ 전달
                 onDismiss = onDismiss
             )
         }
     }
 }
 
-
 @Composable
 fun ChecklistPopup(
     personId: Int,
-    personTagWeight: Float,
-    viewModel: ChecklistViewModel? = null,
+    personTagWeight: Double,
+    popupTime: String,
+    onPopupTimeChange: (String) -> Unit,
+    context: Context,
+    viewModel: ChecklistViewModel = viewModel(),
+    profileViewModel: ProfileViewModel,
     onDismiss: () -> Unit
 ) {
-    val actualViewModel = viewModel ?: viewModel<ChecklistViewModel>()
-
-    // 그 아래에서는 이제 actualViewModel 사용
+    val coroutineScope = rememberCoroutineScope()
     var frequency by remember { mutableStateOf<Float?>(null) }
     var emotion by remember { mutableStateOf<Float?>(null) }
     var distance by remember { mutableStateOf<Float?>(null) }
@@ -109,26 +133,46 @@ fun ChecklistPopup(
                 RadioOption("보통 (가끔 의지하거나 대화함)", 0.5f, distance) { distance = it }
                 RadioOption("심리적으로 거리가 있는 편", 0.0f, distance) { distance = it }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text("팝업 시간 설정: $popupTime")
+                Button(onClick = {
+                    val calendar = Calendar.getInstance()
+                    TimePickerDialog(
+                        context,
+                        { _, hour, minute ->
+                            onPopupTimeChange(String.format("%02d:%02d", hour, minute))
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                }) {
+                    Text("시간 설정")
+                }
             }
         },
         confirmButton = {
             Button(onClick = {
                 if (frequency != null && emotion != null && distance != null) {
-                    val rqs = ChecklistViewModel.calculateRQS(
-                        frequency!!, emotion!!, distance!!, personTagWeight
-                    )
-                    actualViewModel.saveChecklist(
-                        ChecklistResultEntity(
-                            personId = personId,
-                            frequencyScore = frequency!!,
-                            emotionScore = emotion!!,
-                            distanceScore = distance!!,
-                            tagWeight = personTagWeight,
-                            rqsScore = rqs
-                        ),
-                        tagWeight = personTagWeight
-                    )
-                    onDismiss()
+                    coroutineScope.launch {
+                        val rqs = ChecklistViewModel.calculateRQS(
+                            frequency!!, emotion!!, distance!!, personTagWeight
+                        )
+                        viewModel.saveChecklist(
+                            ChecklistResultEntity(
+                                personId = personId,
+                                frequencyScore = frequency!!,
+                                emotionScore = emotion!!,
+                                distanceScore = distance!!,
+                                tagWeight = personTagWeight,
+                                rqsScore = rqs
+                            ),
+                            tagWeight = personTagWeight
+                        )
+                        profileViewModel.loadPerson(personId)
+                        onDismiss()
+                    }
                 }
             }) {
                 Text("저장")
@@ -165,4 +209,3 @@ fun RadioOption(
         Text(text, Modifier.padding(start = 8.dp))
     }
 }
-
